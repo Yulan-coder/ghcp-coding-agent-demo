@@ -56,15 +56,24 @@ describe('Book Favorites App', () => {
     cy.get('input[name="password"]').type(user.password);
     cy.get('button#login').click();
     
-    // Add a couple of books to favorites
-    cy.contains('Books').click();
-    cy.get('button').contains('Add to Favorites').first().click();
-    cy.wait(500);
-    cy.get('button').contains('Add to Favorites').eq(1).click();
-    cy.wait(500);
-    
-    // Go to favorites
+    // Go to favorites to check current state
     cy.get('a#favorites-link').click();
+    
+    // If no favorites exist, add some first
+    cy.get('body').then(($body) => {
+      if ($body.text().includes('No favorite books yet')) {
+        // Add a couple of books to favorites
+        cy.contains('Books').click();
+        cy.get('button').contains('Add to Favorites').first().click();
+        cy.wait(500);
+        cy.get('button').contains('Add to Favorites').eq(1).click();
+        cy.wait(500);
+        
+        // Go back to favorites
+        cy.get('a#favorites-link').click();
+      }
+    });
+    
     cy.get('h2').contains('My Favorite Books').should('exist');
     
     // Verify we have favorites
@@ -87,13 +96,21 @@ describe('Book Favorites App', () => {
     cy.get('input[name="password"]').type(user.password);
     cy.get('button#login').click();
     
-    // Add a book to favorites
-    cy.contains('Books').click();
-    cy.get('button').contains('Add to Favorites').first().click();
-    cy.wait(500);
-    
-    // Go to favorites
+    // Go to favorites to check current state
     cy.get('a#favorites-link').click();
+    
+    // If no favorites exist, add one first
+    cy.get('body').then(($body) => {
+      if ($body.text().includes('No favorite books yet')) {
+        // Add a book to favorites
+        cy.contains('Books').click();
+        cy.get('button').contains('Add to Favorites').first().click();
+        cy.wait(500);
+        
+        // Go back to favorites
+        cy.get('a#favorites-link').click();
+      }
+    });
     
     // Click Clear All but cancel the confirmation
     cy.window().then((win) => {
