@@ -47,4 +47,61 @@ describe('Book Favorites App', () => {
     cy.visit('http://localhost:5173/books');
     cy.url().should('eq', 'http://localhost:5173/');
   });
+
+  // generated-by-copilot: Test clear all favorites functionality
+  it('should clear all favorites with confirmation', () => {
+    // Login first
+    cy.contains('Login').click();
+    cy.get('input[name="username"]').type(user.username);
+    cy.get('input[name="password"]').type(user.password);
+    cy.get('button#login').click();
+    
+    // Add a couple of books to favorites
+    cy.contains('Books').click();
+    cy.get('button').contains('Add to Favorites').first().click();
+    cy.wait(500);
+    cy.get('button').contains('Add to Favorites').eq(1).click();
+    cy.wait(500);
+    
+    // Go to favorites
+    cy.get('a#favorites-link').click();
+    cy.get('h2').contains('My Favorite Books').should('exist');
+    
+    // Verify we have favorites
+    cy.get('ul li').should('have.length.at.least', 1);
+    
+    // Click Clear All button - stub the confirm dialog to accept
+    cy.window().then((win) => {
+      cy.stub(win, 'confirm').returns(true);
+    });
+    cy.get('button#clear-all-favorites').click();
+    
+    // Verify favorites are cleared
+    cy.contains('No favorite books yet.').should('exist');
+  });
+
+  it('should not clear favorites when confirmation is cancelled', () => {
+    // Login first
+    cy.contains('Login').click();
+    cy.get('input[name="username"]').type(user.username);
+    cy.get('input[name="password"]').type(user.password);
+    cy.get('button#login').click();
+    
+    // Add a book to favorites
+    cy.contains('Books').click();
+    cy.get('button').contains('Add to Favorites').first().click();
+    cy.wait(500);
+    
+    // Go to favorites
+    cy.get('a#favorites-link').click();
+    
+    // Click Clear All but cancel the confirmation
+    cy.window().then((win) => {
+      cy.stub(win, 'confirm').returns(false);
+    });
+    cy.get('button#clear-all-favorites').click();
+    
+    // Verify favorites are still there
+    cy.get('ul li').should('have.length.at.least', 1);
+  });
 });

@@ -111,4 +111,38 @@ describe('Favorites API', () => {
       .send({ bookId: '1' });
     expect(res.statusCode).toBe(401);
   });
+
+  // generated-by-copilot: Tests for clearing all favorites
+  it('DELETE /api/favorites should clear all favorites for authenticated user', async () => {
+    const token = getToken('sandra');
+    const users = JSON.parse(fs.readFileSync(usersFile, 'utf-8'));
+    const sandra = users.find(u => u.username === 'sandra');
+    const initialFavoritesCount = sandra.favorites.length;
+    
+    const res = await request(app)
+      .delete('/api/favorites')
+      .set('Authorization', `Bearer ${token}`);
+    
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toMatch(/cleared/);
+    
+    // Verify favorites were cleared
+    const updatedUsers = JSON.parse(fs.readFileSync(usersFile, 'utf-8'));
+    const updatedSandra = updatedUsers.find(u => u.username === 'sandra');
+    expect(updatedSandra.favorites).toEqual([]);
+    expect(initialFavoritesCount).toBeGreaterThan(0); // Ensure we actually cleared something
+  });
+
+  it('DELETE /api/favorites should fail without auth', async () => {
+    const res = await request(app).delete('/api/favorites');
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('DELETE /api/favorites should 404 for non-existent user', async () => {
+    const token = getToken('nouser');
+    const res = await request(app)
+      .delete('/api/favorites')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(404);
+  });
 });
